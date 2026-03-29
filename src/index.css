@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply antialiased text-slate-900 bg-[#f8fafc];
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+@layer components {
+  .a4-container {
+    width: 210mm;
+    min-height: 297mm;
+    padding: 20mm;
+    margin: 0 auto;
+    background: white;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  }
+
+  .resume-section-title {
+    @apply font-bold text-sm tracking-widest border-b border-black mb-3 pb-1 uppercase;
+  }
+}
