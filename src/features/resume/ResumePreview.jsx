@@ -106,52 +106,71 @@ const ResumePreview = () => {
           }}
         >
           {/* Header */}
-          <header className="flex justify-between items-center border-b-2 border-slate-900 pb-5 mb-5">
-            <div className="flex-grow pr-10">
-              <h1 className="text-[26pt] font-black uppercase text-slate-900 leading-none mb-2 mt-[-4px]">
-                {tU(data.personalInfo.fullName) || 'ADINIZ SOYADINIZ'}
-              </h1>
-              <p className="text-[10.5pt] font-bold text-slate-500 uppercase tracking-widest mb-4">
-                {tU(data.personalInfo.title) || 'ÜNVANINIZ'}
-              </p>
-              
-              <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-[9pt] font-medium text-slate-600">
-                {data.personalInfo.email && <div className="flex items-center gap-1.5"><Mail size={12} className="text-slate-400" /> {data.personalInfo.email}</div>}
-                {data.personalInfo.phone && <div className="flex items-center gap-1.5"><Phone size={12} className="text-slate-400" /> {data.personalInfo.phone}</div>}
-                {data.personalInfo.location && <div className="flex items-center gap-1.5"><MapPin size={12} className="text-slate-400" /> {data.personalInfo.location}</div>}
-                {data.personalInfo.linkedin && <div className="flex items-center gap-1.5"><Linkedin size={12} className="text-slate-400" /> {data.personalInfo.linkedin}</div>}
-                {data.personalInfo.github && <div className="flex items-center gap-1.5 font-bold text-slate-900 border-b border-slate-300"><Github size={12} className="text-slate-400" /> {data.personalInfo.github}</div>}
-              </div>
-            </div>
+          {(() => {
+            const themeColor = data.personalInfo.themeColor || '#111827';
+            const getContrastYIQ = (hexcolor) => {
+              if (!hexcolor) return 'black';
+              const r = parseInt(hexcolor.slice(1, 3), 16);
+              const g = parseInt(hexcolor.slice(3, 5), 16);
+              const b = parseInt(hexcolor.slice(5, 7), 16);
+              const yiq = ((r * 299) + (g * 587) + (114 * b)) / 1000;
+              return (yiq >= 128) ? '#111827' : '#FFFFFF';
+            };
+            const textColor = getContrastYIQ(themeColor);
+            const subTextColor = textColor === '#FFFFFF' ? 'rgba(255, 255, 255, 0.8)' : '#64748b';
 
-            {data.personalInfo.profileImage && (
-              <div className="flex-shrink-0">
-                <img src={data.personalInfo.profileImage} className="w-32 h-32 object-cover rounded shadow-sm border border-slate-100" />
-              </div>
-            )}
-          </header>
+            return (
+              <header 
+                className="flex justify-between items-center p-8 mb-5 rounded-lg transition-colors duration-300"
+                style={{ backgroundColor: themeColor, color: textColor }}
+              >
+                {data.personalInfo.profileImage && (
+                  <div className="flex-shrink-0">
+                    <img src={data.personalInfo.profileImage} className="w-32 h-32 object-cover rounded shadow-sm border border-white/20" />
+                  </div>
+                )}
+                
+                <div className="flex-grow pl-10 text-left">
+                  <h1 className="text-[26pt] font-black uppercase leading-none mb-2 mt-[-4px]">
+                    {tU(data.personalInfo.fullName) || 'ADINIZ SOYADINIZ'}
+                  </h1>
+                  <p className="text-[10.5pt] font-bold uppercase tracking-widest mb-4 opacity-90" style={{ color: subTextColor }}>
+                    {tU(data.personalInfo.title) || 'ÜNVANINIZ'}
+                  </p>
+                  
+                  <div className="flex flex-wrap gap-x-5 gap-y-2 text-[9pt] font-medium" style={{ color: subTextColor }}>
+                    {data.personalInfo.email && <div className="flex items-center gap-2"><Mail size={13} strokeWidth={2} /> <span>{data.personalInfo.email}</span></div>}
+                    {data.personalInfo.phone && <div className="flex items-center gap-2"><Phone size={13} strokeWidth={2} /> <span>{data.personalInfo.phone}</span></div>}
+                    {data.personalInfo.location && <div className="flex items-center gap-2"><MapPin size={13} strokeWidth={2} /> <span>{data.personalInfo.location}</span></div>}
+                    {data.personalInfo.linkedin && <div className="flex items-center gap-2"><Linkedin size={13} strokeWidth={2} /> <span>{data.personalInfo.linkedin}</span></div>}
+                    {data.personalInfo.github && <div className="flex items-center gap-2 font-bold border-b border-current pb-0.5"><Github size={13} strokeWidth={2} /> <span>{data.personalInfo.github}</span></div>}
+                  </div>
+                </div>
+              </header>
+            );
+          })()}
 
-          {/* Body */}
-          <div className="flex-1 flex flex-col justify-between py-2">
-            {data.summary ? (
-              <section className="my-2">
-                <h2 className="text-[12.5pt] font-bold border-b-2 border-slate-900 pb-1 mb-2 tracking-wide">{tU('Özet')}</h2>
-                <p className="text-[10.5pt] text-slate-700 leading-relaxed text-justify pr-2 whitespace-pre-line">{data.summary}</p>
+          {/* Body and Footer together for equal distribution */}
+          <div className="flex-grow flex flex-col justify-between py-1">
+            {data.summary && (
+              <section className="mb-1">
+                <h2 className="text-[11.5pt] font-bold border-b border-slate-900 pb-0.5 mb-1 tracking-wide">{tU('Özet')}</h2>
+                <p className="text-[9.5pt] text-slate-700 leading-snug text-justify pr-2 whitespace-pre-line">{data.summary}</p>
               </section>
-            ) : <div className="h-20" />}
+            )}
 
             {data.experience.length > 0 && (
-              <section className="my-2">
-                <h2 className="text-[12.5pt] font-bold border-b-2 border-slate-900 pb-1 mb-2 tracking-wide">{tU('Deneyimler')}</h2>
-                <div className="space-y-4">
+              <section className="mb-1">
+                <h2 className="text-[11.5pt] font-bold border-b border-slate-900 pb-0.5 mb-1 tracking-wide">{tU('Deneyimler')}</h2>
+                <div className="space-y-2">
                   {data.experience.map((exp, i) => (
-                    <div key={i}>
-                      <div className="flex justify-between items-baseline mb-0.5">
-                        <h3 className="text-[11.5pt] font-bold text-slate-900 leading-tight">{tU(exp.position)}</h3>
-                        <span className="text-[9.5pt] font-bold text-slate-600">{exp.duration}</span>
+                    <div key={i} className="mb-1">
+                      <div className="flex justify-between items-baseline">
+                        <h3 className="text-[10.5pt] font-bold text-slate-900 leading-tight">{tU(exp.position)}</h3>
+                        <span className="text-[8.5pt] font-bold text-slate-600">{exp.duration}</span>
                       </div>
-                      <div className="text-[10.5pt] font-bold text-slate-600 uppercase mb-1">{tU(exp.company)}</div>
-                      <p className="text-[10.5pt] text-slate-700 leading-relaxed text-justify pr-2 whitespace-pre-line">{exp.description}</p>
+                      <div className="text-[9.5pt] font-bold text-slate-600 uppercase">{tU(exp.company)}</div>
+                      <p className="text-[9.5pt] text-slate-700 leading-tight text-justify pr-2 whitespace-pre-line">{exp.description}</p>
                     </div>
                   ))}
                 </div>
@@ -159,52 +178,83 @@ const ResumePreview = () => {
             )}
 
             {data.education.length > 0 && (
-              <section className="my-2">
-                <h2 className="text-[12.5pt] font-bold border-b-2 border-slate-900 pb-1 mb-2 tracking-wide">{tU('Eğitim')}</h2>
-                <div className="space-y-3">
+              <section className="mb-1">
+                <h2 className="text-[11.5pt] font-bold border-b border-slate-900 pb-0.5 mb-1 tracking-wide">{tU('Eğitim')}</h2>
+                <div className="space-y-2">
                   {data.education.map((edu, i) => (
                     <div key={i}>
-                      <div className="flex justify-between items-baseline mb-1">
-                        <h3 className="text-[11.5pt] font-bold text-slate-900 leading-tight uppercase">{tU(edu.school)}</h3>
-                        <span className="text-[9.5pt] font-bold text-slate-600">{edu.duration}</span>
+                      <div className="flex justify-between items-baseline mb-0.5">
+                        <h3 className="text-[10.5pt] font-bold text-slate-900 leading-tight uppercase">{tU(edu.school)}</h3>
+                        <span className="text-[8.5pt] font-bold text-slate-600">{edu.duration}</span>
                       </div>
-                      <div className="text-[10.5pt] font-bold text-slate-600 uppercase mb-1">{tU(edu.degree)}</div>
-                      {edu.description && <p className="text-[9.5pt] text-slate-600 leading-relaxed text-justify pr-2">{edu.description}</p>}
+                      <div className="text-[9.5pt] font-bold text-slate-600 uppercase mb-0.5">{tU(edu.degree)}</div>
+                      {edu.description && <p className="text-[9pt] text-slate-600 leading-snug text-justify pr-2">{edu.description}</p>}
                     </div>
                   ))}
                 </div>
               </section>
             )}
-          </div>
 
-          <div className="mt-auto pt-4 border-t-2 border-slate-200 grid grid-cols-5 gap-6">
-               <div className="col-span-3">
-                 {data.skills.length > 0 && (
-                   <section>
-                     <h2 className="text-[12.5pt] font-bold mb-2 tracking-wide">{tU('Yetenekler')}</h2>
-                     <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1">
-                       {data.skills.map((s, i) => (
-                         <span key={i} className="text-[10pt] font-extrabold text-slate-800 uppercase leading-none tracking-tighter">• {tU(s.name)}</span>
-                       ))}
-                     </div>
-                   </section>
-                 )}
-               </div>
-               <div className="col-span-2">
-                 {data.languages.length > 0 && (
-                   <section>
-                     <h2 className="text-[12.5pt] font-bold mb-2 tracking-wide">{tU('Diller')}</h2>
-                     <div className="grid grid-cols-1 gap-y-2 mt-1">
-                       {data.languages.map((l, i) => (
-                         <div key={i} className="flex flex-col">
-                           <span className="text-[10.5pt] font-extrabold text-slate-800 uppercase leading-none">{tU(l.name)}</span>
-                           <span className="text-[9pt] text-slate-500 italic mt-1 leading-none font-medium">{tU(l.level)}</span>
-                         </div>
-                       ))}
-                     </div>
-                   </section>
-                 )}
-               </div>
+            {data.projects && data.projects.length > 0 && (
+              <section className="mb-1">
+                <h2 className="text-[11.5pt] font-bold border-b border-slate-900 pb-0.5 mb-1 tracking-wide">{tU('Projeler')}</h2>
+                <div className="space-y-2">
+                  {data.projects.map((proj, i) => (
+                    <div key={i}>
+                      <div className="flex justify-between items-baseline mb-0.5">
+                        <h3 className="text-[10.5pt] font-bold text-slate-900 leading-tight">{tU(proj.name)}</h3>
+                        <span className="text-[8.5pt] font-bold text-slate-600">{proj.link}</span>
+                      </div>
+                      <p className="text-[9.5pt] text-slate-700 leading-tight text-justify pr-2">{proj.description}</p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            <div className="pt-3 border-t-2 border-slate-200 grid grid-cols-3 gap-6">
+                 <div>
+                   {data.personalSkills && data.personalSkills.length > 0 && (
+                     <section>
+                       <h2 className="text-[11pt] font-bold mb-1 tracking-wide border-b border-slate-900/10 pb-0.5">{tU('Kişisel Beceriler')}</h2>
+                       <div className="flex flex-col gap-y-1 mt-1">
+                         {data.personalSkills.map((s, i) => (
+                           <span key={i} className="text-[9pt] font-bold text-slate-800 leading-none">• {tU(s.name)}</span>
+                         ))}
+                       </div>
+                     </section>
+                   )}
+                 </div>
+
+                 <div>
+                   {data.skills && data.skills.length > 0 && (
+                     <section>
+                       <h2 className="text-[11pt] font-bold mb-1 tracking-wide border-b border-slate-900/10 pb-0.5">{tU('Teknik Beceriler')}</h2>
+                       <div className="flex flex-col gap-y-1 mt-1">
+                         {data.skills.map((s, i) => (
+                           <span key={i} className="text-[9pt] font-bold text-slate-800 leading-none">• {tU(s.name)}</span>
+                         ))}
+                       </div>
+                     </section>
+                   )}
+                 </div>
+
+                 <div>
+                   {data.languages && data.languages.length > 0 && (
+                     <section>
+                       <h2 className="text-[11pt] font-bold mb-1 tracking-wide border-b border-slate-900/10 pb-0.5">{tU('Diller')}</h2>
+                       <div className="grid grid-cols-1 gap-y-1 mt-1">
+                         {data.languages.map((l, i) => (
+                           <div key={i} className="flex flex-col mb-1">
+                             <span className="text-[9pt] font-bold text-slate-800 leading-none">{tU(l.name)}</span>
+                             <span className="text-[8.5pt] text-slate-500 italic mt-0.5 leading-none font-medium">{tU(l.level)}</span>
+                           </div>
+                         ))}
+                       </div>
+                     </section>
+                   )}
+                 </div>
+            </div>
           </div>
         </div>
       </div>

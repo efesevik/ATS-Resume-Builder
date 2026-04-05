@@ -3,7 +3,7 @@ import { useResume } from '../../context/ResumeContext';
 import { Input } from '../../components/ui/Input';
 import Card from '../../components/ui/Card';
 import { TextArea } from '../../components/ui/TextArea';
-import { User, Mail, Phone, MapPin, Linkedin, GraduationCap, Briefcase, Languages, Wrench, FileText, Camera, Trash2, Github, Scissors } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Linkedin, GraduationCap, Briefcase, Languages, Wrench, FileText, Camera, Trash2, Github, Scissors, Smile, Palette } from 'lucide-react';
 import ImageCropper from './ImageCropper';
 
 const ResumeForm = () => {
@@ -105,7 +105,8 @@ const ResumeForm = () => {
             />
           </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-5">
+        
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-5 mt-4">
           <Input 
             label="Konum" 
             value={data.personalInfo.location} 
@@ -121,6 +122,47 @@ const ResumeForm = () => {
             value={data.personalInfo.github || ''} 
             onChange={(e) => updatePersonalInfo('github', e.target.value)} 
           />
+        </div>
+        <div className="mt-6 pt-6 border-t border-zinc-100">
+          <div className="flex items-center gap-2 mb-4">
+            <Palette size={16} className="text-zinc-400" />
+            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Tema Rengi</span>
+          </div>
+          <div className="flex flex-wrap gap-3 items-center">
+            {[
+              { label: 'Gece Siyahı', color: '#111827' },
+              { label: 'Kobalt Mavi', color: '#1e40af' },
+              { label: 'Zümrüt Yeşil', color: '#065f46' },
+              { label: 'Burgonya', color: '#7f1d1d' },
+              { label: 'Sıcak Gri', color: '#4b5563' },
+              { label: 'Altın Kahve', color: '#78350f' }
+            ].map((p, i) => (
+              <button 
+                key={i} 
+                type="button"
+                onClick={() => updatePersonalInfo('themeColor', p.color)}
+                className={`w-8 h-8 rounded-full border-2 transition-all ${
+                  data.personalInfo.themeColor === p.color ? 'border-zinc-900 scale-110 shadow-md' : 'border-transparent'
+                }`}
+                style={{ backgroundColor: p.color }}
+                title={p.label}
+              />
+            ))}
+            <div className="h-4 w-[1px] bg-zinc-200 mx-2" />
+            <div className="flex items-center gap-2 cursor-pointer group relative">
+              <input 
+                type="color" 
+                value={data.personalInfo.themeColor || '#111827'} 
+                onChange={(e) => updatePersonalInfo('themeColor', e.target.value)} 
+                className="w-8 h-8 rounded-full border-2 border-zinc-100 cursor-pointer overflow-hidden opacity-0 absolute inset-0 z-10"
+              />
+              <div 
+                className="w-8 h-8 rounded-full border-2 border-zinc-100 group-hover:border-zinc-300 transition-all shadow-sm"
+                style={{ backgroundColor: data.personalInfo.themeColor || '#111827' }}
+              />
+              <span className="text-[9px] font-bold text-zinc-400 uppercase">Özel</span>
+            </div>
+          </div>
         </div>
       </Card>
 
@@ -254,9 +296,9 @@ const ResumeForm = () => {
         </div>
       </Card>
 
-      {/* Yetenekler ve Diller */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6">
-        <Card title="Yetenekler" icon={<Wrench size={18}/>}>
+      {/* Beceriler ve Diller - Three Column Layout */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+        <Card title="Teknik Beceriler" icon={<Wrench size={18}/>}>
           {data.skills.map((skill, index) => (
             <div key={index} className="flex gap-2 mb-2 group">
               <Input value={skill.name} onChange={(e) => updateItem('skills', index, 'name', e.target.value)} />
@@ -266,6 +308,20 @@ const ResumeForm = () => {
             </div>
           ))}
           <button onClick={() => addItem('skills')} className="mt-2 text-black font-bold text-[9px] uppercase tracking-widest px-4 py-2 bg-zinc-100 rounded-lg hover:bg-black hover:text-white transition-all">
+            + Ekle
+          </button>
+        </Card>
+
+        <Card title="Kişisel Beceriler" icon={<Smile size={18}/>}>
+          {(data.personalSkills || []).map((skill, index) => (
+            <div key={index} className="flex gap-2 mb-2 group">
+              <Input value={skill.name} onChange={(e) => updateItem('personalSkills', index, 'name', e.target.value)} />
+              <button onClick={() => removeItem('personalSkills', index)} className="p-2 text-zinc-300 hover:text-red-500 transition-all">
+                <Trash2 size={16} />
+              </button>
+            </div>
+          ))}
+          <button onClick={() => addItem('personalSkills')} className="mt-2 text-black font-bold text-[9px] uppercase tracking-widest px-4 py-2 bg-zinc-100 rounded-lg hover:bg-black hover:text-white transition-all">
             + Ekle
           </button>
         </Card>

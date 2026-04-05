@@ -11,11 +11,13 @@ const INITIAL_DATA = {
     github: '',
     website: '',
     profileImage: null,
+    themeColor: '#111827',
   },
   summary: '',
   experience: [],
   education: [],
   skills: [],
+  personalSkills: [],
   languages: [],
   projects: [],
 };
@@ -37,6 +39,7 @@ const useResumeData = () => {
           experience: Array.isArray(parsed.experience) ? parsed.experience : [],
           education: Array.isArray(parsed.education) ? parsed.education : [],
           skills: Array.isArray(parsed.skills) ? parsed.skills : [],
+          personalSkills: Array.isArray(parsed.personalSkills) ? parsed.personalSkills : [],
           languages: Array.isArray(parsed.languages) ? parsed.languages : [],
           projects: Array.isArray(parsed.projects) ? parsed.projects : [],
         };
@@ -75,6 +78,8 @@ const useResumeData = () => {
       ? { name: '', link: '', description: '', technologies: '' }
       : section === 'languages'
       ? { name: '', level: 'B1 - Orta Seviye' }
+      : section === 'personalSkills'
+      ? { name: '' }
       : { name: '', level: '' };
 
     setData(prev => {
