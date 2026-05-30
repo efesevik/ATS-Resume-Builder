@@ -1,14 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ResumeForm from './features/resume/ResumeForm';
 import ResumePreview from './features/resume/ResumePreview';
-import { Shield, RefreshCw, Eye, Edit3 } from 'lucide-react';
+import { Shield, RefreshCw, Eye, Edit3, LogOut } from 'lucide-react';
+import { supabase } from './lib/supabaseClient';
+import Auth from './components/Auth';
+import { ResumeProvider } from './context/ResumeContext';
 
-function App() {
+function AppContent({ onLogout }) {
   const [activeTab, setActiveTab] = useState('edit'); 
   
   const handleHardReset = () => {
     if (window.confirm('Tüm kayıtlı veriler silinerek uygulama sıfırlanacaktır. Devam etmek istiyor musunuz?')) {
-      localStorage.clear();
+      localStorage.removeItem('resume-shield-data');
       window.location.reload();
     }
   };
@@ -32,13 +35,19 @@ function App() {
             <button 
               onClick={handleHardReset}
               className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all flex items-center gap-2 text-[10px] font-bold uppercase"
+              title="Formu Sıfırla"
             >
               <RefreshCw size={14} />
               <span className="hidden lg:inline">Sıfırla</span>
             </button>
-            <div className="hidden lg:block text-[10px] font-bold text-gray-400 italic bg-gray-50 px-3 py-1.5 rounded-full">
-              "First impressions are made in 6 seconds."
-            </div>
+            <button 
+              onClick={onLogout}
+              className="p-2 text-gray-400 hover:text-black hover:bg-gray-100 rounded-lg transition-all flex items-center gap-2 text-[10px] font-bold uppercase"
+              title="Çıkış Yap"
+            >
+              <LogOut size={14} />
+              <span className="hidden lg:inline">Çıkış</span>
+            </button>
           </div>
         </div>
       </nav>
@@ -88,6 +97,46 @@ function App() {
         </button>
       </div>
     </div>
+  );
+}
+
+function App() {
+  const [session, setSession] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setLoading(false);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="animate-spin text-black">
+          <RefreshCw size={32} />
+        </div>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return <Auth />;
+  }
+
+  return (
+    <ResumeProvider userId={session.user.id}>
+      <AppContent onLogout={() => supabase.auth.signOut()} />
+    </ResumeProvider>
   );
 }
 

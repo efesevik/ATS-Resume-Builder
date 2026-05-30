@@ -85,7 +85,7 @@ const ResumeForm = () => {
               label="Ad Soyad" 
               value={data.personalInfo.fullName} 
               onChange={(e) => updatePersonalInfo('fullName', e.target.value)} 
-              placeholder="Örn: Furkan Efe Sevik"
+              placeholder="Örn: Ahmet Yılmaz"
             />
             <Input 
               label="Ünvan" 

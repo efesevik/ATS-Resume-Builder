@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabaseClient';
 
 const INITIAL_DATA = {
   personalInfo: {
@@ -22,41 +23,95 @@ const INITIAL_DATA = {
   projects: [],
 };
 
-const useResumeData = () => {
-  const [data, setData] = useState(() => {
-    try {
-      const saved = localStorage.getItem('resume-shield-data');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        // Robust merge to prevent crashes from missing fields
-        return {
+const useResumeData = (userId) => {
+  const [data, setData] = useState(INITIAL_DATA);
+  const [loading, setLoading] = useState(true);
+
+  // Veriyi Supabase'den çek
+  useEffect(() => {
+    if (!userId) return;
+
+    const fetchResume = async () => {
+      try {
+        const { data: row, error } = await supabase
+          .from('resumes')
+          .select('resume_data')
+          .eq('id', userId)
+          .single();
+
+        if (error && error.code !== 'PGRST116') { // PGRST116: Kayıt bulunamadı hatası
+          console.error('Supabase veri çekme hatası:', error);
+        }
+
+        let currentData = INITIAL_DATA;
+
+        if (row && row.resume_data) {
+          // Supabase'de veri varsa onu kullan
+          currentData = row.resume_data;
+        } else {
+          // Supabase boşsa eski localstorage verisi var mı diye bak (Geçiş için)
+          const saved = localStorage.getItem('resume-shield-data');
+          if (saved) {
+            currentData = JSON.parse(saved);
+          }
+        }
+
+        // Veriyi güvenli bir şekilde state'e aktar
+        setData({
           ...INITIAL_DATA,
-          ...parsed,
+          ...currentData,
           personalInfo: {
             ...INITIAL_DATA.personalInfo,
-            ...(parsed.personalInfo || {})
+            ...(currentData.personalInfo || {})
           },
-          experience: Array.isArray(parsed.experience) ? parsed.experience : [],
-          education: Array.isArray(parsed.education) ? parsed.education : [],
-          skills: Array.isArray(parsed.skills) ? parsed.skills : [],
-          personalSkills: Array.isArray(parsed.personalSkills) ? parsed.personalSkills : [],
-          languages: Array.isArray(parsed.languages) ? parsed.languages : [],
-          projects: Array.isArray(parsed.projects) ? parsed.projects : [],
-        };
-      }
-    } catch (e) {
-      console.error("Critical error loading resume data, resetting to initial state.", e);
-    }
-    return INITIAL_DATA;
-  });
+          experience: Array.isArray(currentData.experience) ? currentData.experience : [],
+          education: Array.isArray(currentData.education) ? currentData.education : [],
+          skills: Array.isArray(currentData.skills) ? currentData.skills : [],
+          personalSkills: Array.isArray(currentData.personalSkills) ? currentData.personalSkills : [],
+          languages: Array.isArray(currentData.languages) ? currentData.languages : [],
+          projects: Array.isArray(currentData.projects) ? currentData.projects : [],
+        });
 
+      } catch (e) {
+        console.error("Kritik veri yükleme hatası", e);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchResume();
+  }, []);
+
+  // Veri değiştiğinde hem localStorage'a hem Supabase'e kaydet (1 saniye gecikmeli/debounce ile)
   useEffect(() => {
-    try {
-      localStorage.setItem('resume-shield-data', JSON.stringify(data));
-    } catch (e) {
-      console.warn("Storage warning: Possibly hitting limit with large profile image", e);
-    }
-  }, [data]);
+    if (loading || !userId) return; // Henüz yükleniyorsa veya userId yoksa kaydetme
+
+    const saveResume = async () => {
+      try {
+        // Çevrimdışı durumlar için yine de local'e yazalım
+        localStorage.setItem('resume-shield-data', JSON.stringify(data));
+        
+        // Supabase'e Upsert (Varsa güncelle, yoksa oluştur)
+        const { error } = await supabase
+          .from('resumes')
+          .upsert({ 
+            id: userId, 
+            resume_data: data,
+            updated_at: new Date().toISOString()
+          }, { onConflict: 'id' });
+
+        if (error) {
+          console.error('Supabase kaydetme hatası:', error);
+        }
+      } catch (e) {
+        console.warn("Kayıt uyarısı:", e);
+      }
+    };
+
+    // Her tuş vuruşunda veritabanını yormamak için 1 saniyelik debounce ekliyoruz
+    const timeoutId = setTimeout(saveResume, 1000);
+    return () => clearTimeout(timeoutId);
+  }, [data, loading, userId]);
 
   const updatePersonalInfo = (field, value) => {
     setData(prev => ({
@@ -119,11 +174,17 @@ const useResumeData = () => {
     if (window.confirm('Tüm veriler silinecek. Emin misiniz?')) {
       setData(INITIAL_DATA);
       localStorage.removeItem('resume-shield-data');
+      // Supabase'den de silinebilir veya boş data olarak güncellenebilir.
+      // Şu an sadece boş data ile update ediyoruz:
+      if (userId) {
+        supabase.from('resumes').upsert({ id: userId, resume_data: INITIAL_DATA });
+      }
     }
   };
 
   return {
     data,
+    loading, // Yükleniyor durumunu UI'da kullanmak isteyebilirsin
     updatePersonalInfo,
     updateSummary,
     addItem,

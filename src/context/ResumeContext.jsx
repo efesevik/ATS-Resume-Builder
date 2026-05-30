@@ -3,8 +3,8 @@ import useResumeData from '../hooks/useResumeData';
 
 const ResumeContext = createContext();
 
-export const ResumeProvider = ({ children }) => {
-  const resumeData = useResumeData();
+export const ResumeProvider = ({ children, userId }) => {
+  const resumeData = useResumeData(userId);
   
   return (
     <ResumeContext.Provider value={resumeData}>

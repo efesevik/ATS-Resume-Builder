@@ -1,0 +1,17 @@
+name: Supabase Keep Alive
+
+on:
+  schedule:
+    # Her Pazartesi ve Perşembe günü saat 09:00'da çalışır
+    - cron: '0 9 * * 1,4'
+  workflow_dispatch: # Manuel olarak da tetikleyebilmeniz için
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Ping to Supabase API
+        run: |
+          curl -i -X GET "${{ secrets.SUPABASE_URL }}/rest/v1/resumes?select=id&limit=1" \
+          -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+          -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}"
